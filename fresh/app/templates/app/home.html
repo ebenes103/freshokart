@@ -2,22 +2,12 @@
 {% load static %}
 
 {% block content %}
-<!-- Hero Section with Slider -->
+<!-- Hero Section with Static Image -->
 <div class="hero-section">
     <div class="slider-container">
-        <div class="slider">
-            <div class="slide">
-                <img src="{% static 'images/banner.png' %}" alt="Fresh Vegetables">
-            </div>
-            <!-- <div class="slide" style="display: none;">
-                <img src="{% static 'images/slide2.jpg' %}" alt="Fresh Fruits">
-            </div>
-            <div class="slide" style="display: none;">
-                <img src="{% static 'images/slide3.jpg' %}" alt="Fresh Meat & Fish">
-            </div> -->
+        <div class="slide">
+            <img src="{% static 'images/1stimage.png' %}" alt="Fresh Vegetables">
         </div>
-        <!-- <button class="slider-btn prev" onclick="changeSlide(-1)">❮</button>
-        <button class="slider-btn next" onclick="changeSlide(1)">❯</button> -->
     </div>
 </div>
 
@@ -63,23 +53,64 @@
         </form>
     </div>
     
-    <!-- Category Buttons -->
+    <!-- Category Buttons with Background Images -->
     <div class="categories-section">
-        <div class="text-center">
-            <a href="{% url 'all_products' %}" class="category-btn">
-                {% if categories.first %}
-                    <img src="{{ categories.first.icon.url|default:'/static/images/default-category.png' }}" class="category-img" alt="All">
-                {% else %}
-                    <img src="/static/images/default-category.png" class="category-img" alt="All">
-                {% endif %}
-                <div class="category-name">All Products</div>
-            </a>
-            {% for category in categories %}
-                <a href="{% url 'category_products' category.id %}" class="category-btn">
-                    <img src="{{ category.icon.url|default:'/static/images/default-category.png' }}" class="category-img" alt="{{ category.name }}">
-                    <div class="category-name">{{ category.name }}</div>
-                </a>
-            {% endfor %}
+        <div class="container">
+            <div class="row justify-content-center">
+                <!-- All Products -->
+                <div class="col-md-2 col-4 mb-4">
+                    <a href="{% url 'all_products' %}" class="category-btn" id="cat-all">
+                        <div class="category-overlay">
+                            <div class="category-name">All Products</div>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- Vegetables -->
+                <div class="col-md-2 col-4 mb-4">
+                    <a href="{% url 'category_products' 1 %}" class="category-btn" id="cat-veg">
+                        <div class="category-overlay">
+                            <div class="category-name">Vegetables</div>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- Fruits -->
+                <div class="col-md-2 col-4 mb-4">
+                    <a href="{% url 'category_products' 2 %}" class="category-btn" id="cat-fruits">
+                        <div class="category-overlay">
+                            <div class="category-name">Fruits</div>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- Eggs -->
+                <div class="col-md-2 col-4 mb-4">
+                    <a href="{% url 'category_products' 3 %}" class="category-btn" id="cat-eggs">
+                        <div class="category-overlay">
+                            <div class="category-name">Eggs</div>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- Fish -->
+                <div class="col-md-2 col-4 mb-4">
+                    <a href="{% url 'category_products' 4 %}" class="category-btn" id="cat-fish">
+                        <div class="category-overlay">
+                            <div class="category-name">Fish</div>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- Meat -->
+                <div class="col-md-2 col-4 mb-4">
+                    <a href="{% url 'category_products' 5 %}" class="category-btn" id="cat-meat">
+                        <div class="category-overlay">
+                            <div class="category-name">Meat</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -127,7 +158,91 @@
     </div>
 </div>
 
+<style>
+    /* Category button styles inline to ensure they work */
+    .category-btn {
+        display: block;
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background-size: cover !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+        text-decoration: none;
+        position: relative;
+        margin: 0 auto;
+        transition: transform 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        cursor: pointer;
+    }
+    
+    .category-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s ease;
+    }
+    
+    .category-btn:hover {
+        transform: translateY(-5px);
+    }
+    
+    .category-btn:hover .category-overlay {
+        background: rgba(0,0,0,0.3);
+    }
+    
+    .category-name {
+        color: white;
+        font-weight: bold;
+        font-size: 1.1rem;
+        text-align: center;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        margin: 0;
+        padding: 10px;
+    }
+    
+    @media (max-width: 768px) {
+        .category-btn {
+            width: 100px;
+            height: 100px;
+        }
+        .category-name {
+            font-size: 0.85rem;
+        }
+    }
+</style>
+
 <script>
+    // Set background images using JavaScript
+    document.addEventListener('DOMContentLoaded', function() {
+        // Define the image paths
+        const categoryImages = {
+            'cat-all': "{% static 'images/categories/all-products.png' %}",
+            'cat-veg': "{% static 'images/categories/vegetables.png' %}",
+            'cat-fruits': "{% static 'images/categories/fruits.png' %}",
+            'cat-eggs': "{% static 'images/categories/eggs.png' %}",
+            'cat-fish': "{% static 'images/categories/fish.png' %}",
+            'cat-meat': "{% static 'images/categories/meat.png' %}"
+        };
+        
+        // Apply background images to each button
+        for (const [id, imagePath] of Object.entries(categoryImages)) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.backgroundImage = `url('${imagePath}')`;
+                element.style.backgroundSize = 'cover';
+                element.style.backgroundPosition = 'center';
+            }
+        }
+    });
+    
     // Dynamic city loading based on district
     document.getElementById('district-select').addEventListener('change', function() {
         const district = this.value;
