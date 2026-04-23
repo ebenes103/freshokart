@@ -1,0 +1,40 @@
+{% extends 'app/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="section-header">
+        <div>
+            <h2>{{ category.name }}</h2>
+            <p>Fresh and high-quality {{ category.name|lower }} from local sellers</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% for product in products %}
+            <div class="col-md-3 mb-4">
+                <div class="product-card">
+                    {% if product.images.first %}
+                        <img src="{{ product.images.first.image.url }}" class="product-img" alt="{{ product.name }}">
+                    {% else %}
+                        <img src="/static/images/default-product.jpg" class="product-img" alt="{{ product.name }}">
+                    {% endif %}
+                    <div class="product-info">
+                        <div class="product-name">{{ product.name }}</div>
+                        <div class="product-price">₹{{ product.price }}/{{ product.unit }}</div>
+                        <div class="product-location">
+                            <i class="fas fa-map-marker-alt"></i> {{ product.city }}, {{ product.district }}
+                        </div>
+                        <a href="{% url 'product_detail' product.id %}" class="btn-buy d-block text-center text-decoration-none">View Details</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                <h4>No products in this category</h4>
+                <p>Check back later for fresh {{ category.name|lower }}!</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

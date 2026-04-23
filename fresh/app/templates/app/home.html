@@ -1,0 +1,150 @@
+{% extends 'app/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section with Slider -->
+<div class="hero-section">
+    <div class="slider-container">
+        <div class="slider">
+            <div class="slide">
+                <img src="{% static 'images/banner.png' %}" alt="Fresh Vegetables">
+            </div>
+            <!-- <div class="slide" style="display: none;">
+                <img src="{% static 'images/slide2.jpg' %}" alt="Fresh Fruits">
+            </div>
+            <div class="slide" style="display: none;">
+                <img src="{% static 'images/slide3.jpg' %}" alt="Fresh Meat & Fish">
+            </div> -->
+        </div>
+        <!-- <button class="slider-btn prev" onclick="changeSlide(-1)">❮</button>
+        <button class="slider-btn next" onclick="changeSlide(1)">❯</button> -->
+    </div>
+</div>
+
+<div class="container">
+    <!-- Sticky Filter Section -->
+    <div class="filter-section" id="filter-section">
+        <div class="filter-title">
+            <i class="fas fa-filter"></i>
+            Find Fresh Products
+        </div>
+        <form method="GET" action="{% url 'all_products' %}">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>District</label>
+                    <select name="district" id="district-select">
+                        <option value="">All Districts</option>
+                        {% for district in districts %}
+                            <option value="{{ district }}">{{ district }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>City / Town</label>
+                    <select name="city" id="city-select">
+                        <option value="">All Cities</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Category</label>
+                    <select name="category">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" name="search" placeholder="Search products...">
+                </div>
+                <button type="submit" class="filter-btn">Search</button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Category Buttons -->
+    <div class="categories-section">
+        <div class="text-center">
+            <a href="{% url 'all_products' %}" class="category-btn">
+                {% if categories.first %}
+                    <img src="{{ categories.first.icon.url|default:'/static/images/default-category.png' }}" class="category-img" alt="All">
+                {% else %}
+                    <img src="/static/images/default-category.png" class="category-img" alt="All">
+                {% endif %}
+                <div class="category-name">All Products</div>
+            </a>
+            {% for category in categories %}
+                <a href="{% url 'category_products' category.id %}" class="category-btn">
+                    <img src="{{ category.icon.url|default:'/static/images/default-category.png' }}" class="category-img" alt="{{ category.name }}">
+                    <div class="category-name">{{ category.name }}</div>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Featured Products -->
+    <div class="section-header">
+        <div>
+            <div class="section-title">Featured Products</div>
+            <div class="section-subtitle">Handpicked fresh products from local sellers.</div>
+        </div>
+        <a href="{% url 'all_products' %}" class="view-all-btn">View All →</a>
+    </div>
+    
+    <div class="row">
+        {% for product in fresh_products %}
+            <div class="col-md-3">
+                <div class="product-card">
+                    {% if product.images.first %}
+                        <img src="{{ product.images.first.image.url }}" class="product-img" alt="{{ product.name }}">
+                    {% else %}
+                        <img src="/static/images/default-product.jpg" class="product-img" alt="{{ product.name }}">
+                    {% endif %}
+                    <div class="product-info">
+                        <div class="product-name">{{ product.name }}</div>
+                        <div class="product-price">₹{{ product.price }}/{{ product.unit }}</div>
+                        <div class="product-location">
+                            <i class="fas fa-map-marker-alt"></i> {{ product.city }}, {{ product.district }}
+                        </div>
+                        <a href="{% url 'product_detail' product.id %}" class="btn-buy d-block text-center text-decoration-none">View Details</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center">
+                <p>No products available at the moment.</p>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Daily Fresh Offers -->
+    <div class="section-header mt-5">
+        <div>
+            <div class="section-title">Daily Fresh Offers</div>
+            <div class="section-subtitle">Save more on fresh picks.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Dynamic city loading based on district
+    document.getElementById('district-select').addEventListener('change', function() {
+        const district = this.value;
+        const citySelect = document.getElementById('city-select');
+        
+        if (district) {
+            fetch(`/api/cities/?district=${district}`)
+                .then(response => response.json())
+                .then(data => {
+                    citySelect.innerHTML = '<option value="">All Cities</option>';
+                    data.cities.forEach(city => {
+                        citySelect.innerHTML += `<option value="${city}">${city}</option>`;
+                    });
+                });
+        } else {
+            citySelect.innerHTML = '<option value="">All Cities</option>';
+        }
+    });
+</script>
+{% endblock %}

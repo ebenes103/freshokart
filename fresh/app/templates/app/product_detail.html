@@ -1,0 +1,116 @@
+{% extends 'app/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Product Images -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    {% if images %}
+                        <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                {% for image in images %}
+                                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                        <img src="{{ image.image.url }}" class="d-block w-100" style="height: 400px; object-fit: cover;" alt="{{ product.name }}">
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if images|length > 1 %}
+                                <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                </button>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <img src="/static/images/default-product.jpg" class="img-fluid" alt="{{ product.name }}">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Product Info -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="product-name">{{ product.name }}</h2>
+                    <div class="product-price display-4">₹{{ product.price }}/<small>{{ product.unit }}</small></div>
+                    <hr>
+                    <p><strong>Description:</strong></p>
+                    <p>{{ product.description }}</p>
+                    <p><strong>Location:</strong> <i class="fas fa-map-marker-alt"></i> {{ product.city }}, {{ product.district }}</p>
+                    <p><strong>Seller:</strong> {{ product.seller.user.username }}</p>
+                    <p><strong>Quantity Available:</strong> {{ product.quantity }} {{ product.unit }}(s)</p>
+                    <p><strong>Posted on:</strong> {{ product.created_at|date:"F d, Y" }}</p>
+                    <p><strong>Fresh until:</strong> {{ product.expiry_date|date:"F d, Y" }}</p>
+                    
+                    {% if product.is_fresh %}
+                        <span class="badge bg-success mb-3">✓ Fresh</span>
+                    {% else %}
+                        <span class="badge bg-danger mb-3">Expired</span>
+                    {% endif %}
+                    
+                    {% if user.is_authenticated and user.userprofile.user_type == 'buyer' and product.is_available and product.booked_by is None and product.is_fresh %}
+                        <form method="POST" class="mt-3">
+                            {% csrf_token %}
+                            <button type="submit" name="book" class="btn btn-success btn-lg w-100">Buy Now</button>
+                        </form>
+                    {% elif user.is_authenticated and user.userprofile.user_type == 'buyer' and product.booked_by %}
+                        <div class="alert alert-warning mt-3">This product has been booked by another buyer.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chat with Seller -->
+    {% if user.is_authenticated and user.userprofile.user_type == 'buyer' %}
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="fas fa-comments"></i> Chat with Seller</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <textarea name="message" class="form-control" rows="3" placeholder="Ask seller about product quality, delivery, etc..."></textarea>
+                        </div>
+                        <button type="submit" name="message" class="btn btn-success">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Related Products -->
+    <div class="section-header mt-5">
+        <div>
+            <h4>Related Products</h4>
+        </div>
+    </div>
+    <div class="row">
+        {% for related in product.category.product_set.all|slice:":4" %}
+            {% if related.id != product.id and related.is_fresh and related.is_available %}
+                <div class="col-md-3">
+                    <div class="product-card">
+                        {% if related.images.first %}
+                            <img src="{{ related.images.first.image.url }}" class="product-img" alt="{{ related.name }}">
+                        {% endif %}
+                        <div class="product-info">
+                            <div class="product-name">{{ related.name }}</div>
+                            <div class="product-price">₹{{ related.price }}/{{ related.unit }}</div>
+                            <a href="{% url 'product_detail' related.id %}" class="btn-buy d-block text-center text-decoration-none">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

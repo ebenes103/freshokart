@@ -1,0 +1,85 @@
+{% extends 'app/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4>Add New Product</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ product_form|crispy }}
+                        <div class="mb-3">
+                            <label class="form-label">Product Images (Multiple)</label>
+                            <input type="file" name="images" multiple accept="image/*" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <select name="category" class="form-control" required>
+                                <option value="">Select Category</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Add Product</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4>My Products</h4>
+                </div>
+                <div class="card-body">
+                    {% if products %}
+                        <div class="row">
+                            {% for product in products %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card">
+                                        <div class="row g-0">
+                                            <div class="col-md-4">
+                                                {% if product.images.first %}
+                                                    <img src="{{ product.images.first.image.url }}" class="img-fluid rounded-start" style="height: 100%; object-fit: cover;">
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-8">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">{{ product.name }}</h5>
+                                                    <p class="card-text">₹{{ product.price }}/{{ product.unit }}</p>
+                                                    <p class="card-text">
+                                                        <small class="text-muted">
+                                                            Location: {{ product.city }}, {{ product.district }}<br>
+                                                            Posted: {{ product.created_at|date:"M d, Y" }}<br>
+                                                            {% if product.is_fresh %}
+                                                                <span class="text-success">✓ Fresh</span>
+                                                            {% else %}
+                                                                <span class="text-danger">Expired</span>
+                                                            {% endif %}
+                                                        </small>
+                                                    </p>
+                                                    {% if product.booked_by %}
+                                                        <span class="badge bg-warning">Booked by {{ product.booked_by.user.username }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center">No products added yet. Add your first product!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
