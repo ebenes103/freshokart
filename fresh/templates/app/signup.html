@@ -7,7 +7,7 @@
         <div class="col-md-8">
             <div class="card shadow">
                 <div class="card-header bg-success text-white text-center">
-                    <h3>Create Your Account</h3>
+                    <h3><i class="fas fa-user-plus"></i> Create Your Account</h3>
                     <p>Join FreshOKart as Buyer or Seller</p>
                 </div>
                 <div class="card-body">
@@ -15,11 +15,13 @@
                         {% csrf_token %}
                         {{ form|crispy }}
                         <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-success btn-lg">Sign Up</button>
+                            <button type="submit" class="btn btn-success btn-lg px-5">
+                                <i class="fas fa-user-check"></i> Sign Up
+                            </button>
                         </div>
                     </form>
                     <div class="text-center mt-3">
-                        <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+                        <p>Already have an account? <a href="{% url 'login' %}" class="text-success">Login here</a></p>
                     </div>
                 </div>
             </div>
@@ -31,18 +33,21 @@
     .card {
         border-radius: 15px;
         overflow: hidden;
+        border: none;
     }
     .card-header {
         background: linear-gradient(135deg, #2e7d32, #1b5e20);
+        border-bottom: none;
     }
     .btn-success {
         background-color: #2e7d32;
         border: none;
-        padding: 12px 40px;
         border-radius: 25px;
+        transition: all 0.3s;
     }
     .btn-success:hover {
         background-color: #1b5e20;
+        transform: translateY(-2px);
     }
 </style>
 {% endblock %}

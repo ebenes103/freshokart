@@ -1,4 +1,5 @@
 {% extends 'app/base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="container py-4">
@@ -7,41 +8,55 @@
         <div class="col-md-3">
             <div class="card shadow">
                 <div class="card-header bg-success text-white">
-                    <h5><i class="fas fa-filter"></i> Filters</h5>
+                    <h5><i class="fas fa-filter"></i> Find Fresh Products</h5>
                 </div>
                 <div class="card-body">
-                    <form method="GET">
+                    <form method="GET" action="{% url 'all_products' %}" id="filter-form">
+                        <!-- District Filter -->
                         <div class="mb-3">
                             <label class="form-label">District</label>
-                            <select name="district" class="form-control" id="filter-district">
+                            <select name="district" id="district-select" class="form-control">
                                 <option value="">All Districts</option>
                                 {% for district in districts %}
-                                    <option value="{{ district }}" {% if selected_district == district %}selected{% endif %}>{{ district }}</option>
+                                    <option value="{{ district.id }}" {% if selected_district == district.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ district.name }}
+                                    </option>
                                 {% endfor %}
                             </select>
                         </div>
+                        
+                        <!-- City Filter -->
                         <div class="mb-3">
-                            <label class="form-label">City/Town</label>
-                            <select name="city" class="form-control" id="filter-city">
+                            <label class="form-label">City / Town</label>
+                            <select name="city" id="city-select" class="form-control" {% if not cities %}disabled{% endif %}>
                                 <option value="">All Cities</option>
                                 {% for city in cities %}
-                                    <option value="{{ city }}" {% if selected_city == city %}selected{% endif %}>{{ city }}</option>
+                                    <option value="{{ city.id }}" {% if selected_city == city.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ city.name }}
+                                    </option>
                                 {% endfor %}
                             </select>
                         </div>
+                        
+                        <!-- Category Filter -->
                         <div class="mb-3">
                             <label class="form-label">Category</label>
                             <select name="category" class="form-control">
-                                <option value="">All Categories</option>
-                                {% for cat in categories %}
-                                    <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
-                                {% endfor %}
+                                <option value="">All Products</option>
+                                <option value="fruits" {% if selected_category == 'fruits' %}selected{% endif %}>Fruits</option>
+                                <option value="vegetables" {% if selected_category == 'vegetables' %}selected{% endif %}>Vegetables</option>
+                                <option value="eggs" {% if selected_category == 'eggs' %}selected{% endif %}>Eggs</option>
+                                <option value="fish" {% if selected_category == 'fish' %}selected{% endif %}>Fish</option>
+                                <option value="meat" {% if selected_category == 'meat' %}selected{% endif %}>Meat</option>
                             </select>
                         </div>
+                        
+                        <!-- Search Filter -->
                         <div class="mb-3">
                             <label class="form-label">Search</label>
                             <input type="text" name="search" class="form-control" value="{{ search_query }}" placeholder="Search products...">
                         </div>
+                        
                         <button type="submit" class="btn btn-success w-100">Apply Filters</button>
                         <a href="{% url 'all_products' %}" class="btn btn-secondary w-100 mt-2">Clear All</a>
                     </form>
@@ -53,8 +68,8 @@
         <div class="col-md-9">
             <div class="section-header">
                 <div>
-                    <h3>All Fresh Products</h3>
-                    <p>Showing {{ products.count }} products</p>
+                    <h3>Fresh Products</h3>
+                    <p>Showing {{ products.count }} product(s)</p>
                 </div>
             </div>
             
@@ -67,16 +82,69 @@
                             {% else %}
                                 <img src="/static/images/default-product.jpg" class="product-img" alt="{{ product.name }}">
                             {% endif %}
+                            
+                            <!-- Badges -->
+                            <div class="product-badges">
+                                {% if product.is_fresh %}
+                                    <span class="badge freshness-fresh">
+                                        <i class="fas fa-leaf"></i> Fresh
+                                    </span>
+                                {% elif product.is_moderately_fresh %}
+                                    <span class="badge freshness-moderate">
+                                        <i class="fas fa-clock"></i> Use Soon
+                                    </span>
+                                {% else %}
+                                    <span class="badge freshness-old">
+                                        <i class="fas fa-hourglass-end"></i> Expired
+                                    </span>
+                                {% endif %}
+                                
+                                {% if product.quantity_left <= 0 %}
+                                    <span class="badge badge-outstock">Out of Stock</span>
+                                {% elif product.quantity_left <= 3 %}
+                                    <span class="badge badge-lowstock">Only {{ product.quantity_left }} left</span>
+                                {% endif %}
+                                
+                                {% if product.quantity_booked > 0 %}
+                                    <span class="badge badge-booked">
+                                        <i class="fas fa-shopping-cart"></i> {{ product.quantity_booked }} booked
+                                    </span>
+                                {% endif %}
+                            </div>
+                            
                             <div class="product-info">
                                 <div class="product-name">{{ product.name }}</div>
                                 <div class="product-price">₹{{ product.price }}/{{ product.unit }}</div>
-                                <div class="product-location">
-                                    <i class="fas fa-map-marker-alt"></i> {{ product.city }}, {{ product.district }}
+                                
+                                <div class="product-stock">
+                                    {% if product.quantity_left > 0 %}
+                                        <span class="text-success">✓ {{ product.quantity_left }} available</span>
+                                    {% else %}
+                                        <span class="text-danger">✗ Out of stock</span>
+                                    {% endif %}
                                 </div>
+                                
+                                <div class="product-location">
+                                    <i class="fas fa-map-marker-alt"></i> 
+                                    {% if product.city %}
+                                        {{ product.city.name }}
+                                    {% else %}
+                                        Location not set
+                                    {% endif %}, 
+                                    {% if product.district %}
+                                        {{ product.district.name }}
+                                    {% endif %}
+                                </div>
+                                
                                 <div class="mb-2">
                                     <small class="text-muted">Seller: {{ product.seller.user.username }}</small>
                                 </div>
-                                <a href="{% url 'product_detail' product.id %}" class="btn-buy d-block text-center text-decoration-none">View Details</a>
+                                
+                                {% if product.id %}
+                                    <a href="{% url 'product_detail' product.id %}" class="btn-buy d-block text-center text-decoration-none">View Details</a>
+                                {% else %}
+                                    <button class="btn-buy d-block text-center text-decoration-none disabled" disabled>Not Available</button>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -93,22 +161,180 @@
 </div>
 
 <script>
-    document.getElementById('filter-district').addEventListener('change', function() {
-        const district = this.value;
-        const citySelect = document.getElementById('filter-city');
+    // Dynamic city loading based on district
+    document.addEventListener('DOMContentLoaded', function() {
+        const districtSelect = document.getElementById('district-select');
+        const citySelect = document.getElementById('city-select');
         
-        if (district) {
-            fetch(`/api/cities/?district=${district}`)
-                .then(response => response.json())
-                .then(data => {
+        if (districtSelect) {
+            districtSelect.addEventListener('change', function() {
+                const districtId = this.value;
+                
+                if (districtId) {
+                    citySelect.disabled = true;
+                    citySelect.innerHTML = '<option value="">Loading cities...</option>';
+                    
+                    fetch(`/api/cities/?district_id=${districtId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            citySelect.innerHTML = '<option value="">All Cities</option>';
+                            data.cities.forEach(city => {
+                                citySelect.innerHTML += `<option value="${city.id}">${city.name}</option>`;
+                            });
+                            citySelect.disabled = false;
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            citySelect.innerHTML = '<option value="">Error loading cities</option>';
+                        });
+                } else {
                     citySelect.innerHTML = '<option value="">All Cities</option>';
-                    data.cities.forEach(city => {
-                        citySelect.innerHTML += `<option value="${city}">${city}</option>`;
-                    });
-                });
-        } else {
-            citySelect.innerHTML = '<option value="">All Cities</option>';
+                    citySelect.disabled = true;
+                }
+            });
+            
+            // Trigger change event if district is pre-selected
+            if (districtSelect.value) {
+                districtSelect.dispatchEvent(new Event('change'));
+            }
         }
     });
 </script>
+
+<style>
+    .section-header {
+        margin-bottom: 30px;
+    }
+    
+    .product-card {
+        position: relative;
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: transform 0.3s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+    
+    .product-img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .product-badges {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        z-index: 10;
+    }
+    
+    .product-badges .badge {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .product-info {
+        padding: 20px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .product-name {
+        font-size: 1.1rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .product-price {
+        color: #2e7d32;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+    
+    .product-stock {
+        margin: 10px 0;
+    }
+    
+    .product-location {
+        color: #666;
+        font-size: 0.85rem;
+        margin: 10px 0;
+    }
+    
+    .btn-buy {
+        background-color: #2e7d32;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 8px;
+        width: 100%;
+        cursor: pointer;
+        margin-top: auto;
+        transition: background 0.3s;
+    }
+    
+    .btn-buy:hover {
+        background-color: #1b5e20;
+        color: white;
+    }
+    
+    .btn-buy.disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+    }
+    
+    /* Badge Colors */
+    .freshness-fresh {
+        background-color: #2e7d32;
+        color: white;
+    }
+    
+    .freshness-moderate {
+        background-color: #ff9800;
+        color: white;
+    }
+    
+    .freshness-old {
+        background-color: #9e9e9e;
+        color: white;
+    }
+    
+    .badge-outstock {
+        background-color: #f44336;
+        color: white;
+    }
+    
+    .badge-lowstock {
+        background-color: #ff5722;
+        color: white;
+    }
+    
+    .badge-booked {
+        background-color: #2196f3;
+        color: white;
+    }
+    
+    .text-success {
+        color: #2e7d32 !important;
+    }
+    
+    .text-danger {
+        color: #f44336 !important;
+    }
+</style>
 {% endblock %}

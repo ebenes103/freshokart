@@ -6,7 +6,8 @@
         <div class="col-md-8">
             <div class="card shadow">
                 <div class="card-header bg-success text-white">
-                    <h4>My Cart</h4>
+                    <h4><i class="fas fa-shopping-cart"></i> My Bookings</h4>
+                    <small>Products you have booked will appear here</small>
                 </div>
                 <div class="card-body">
                     {% if cart_items %}
@@ -16,22 +17,24 @@
                                     <div class="col-md-3">
                                         {% if item.product.images.first %}
                                             <img src="{{ item.product.images.first.image.url }}" class="img-fluid rounded" style="height: 100px; object-fit: cover;">
+                                        {% else %}
+                                            <img src="/static/images/default-product.jpg" class="img-fluid rounded" style="height: 100px; object-fit: cover;">
                                         {% endif %}
                                     </div>
-                                    <div class="col-md-5">
+                                    <div class="col-md-4">
                                         <h5>{{ item.product.name }}</h5>
                                         <p class="text-muted">₹{{ item.product.price }}/{{ item.product.unit }}</p>
-                                        <p><small>{{ item.product.city }}, {{ item.product.district }}</small></p>
+                                        <p><small>{{ item.product.city.name }}, {{ item.product.district.name }}</small></p>
                                     </div>
                                     <div class="col-md-2">
                                         <p class="mb-0"><strong>Quantity:</strong></p>
                                         <p>{{ item.quantity }}</p>
                                     </div>
-                                    <div class="col-md-2">
+                                    <div class="col-md-3">
                                         <p class="mb-0"><strong>Total:</strong></p>
                                         <p class="text-success">₹{{ item.product.price|floatformat:2 }}</p>
-                                        <a href="{% url 'remove_from_cart' item.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Remove this item?')">
-                                            <i class="fas fa-trash"></i> Remove
+                                        <a href="{% url 'cancel_booking' item.booking.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Cancel this booking? The product will become available for others.')">
+                                            <i class="fas fa-trash"></i> Cancel Booking
                                         </a>
                                     </div>
                                 </div>
@@ -40,7 +43,8 @@
                     {% else %}
                         <div class="text-center py-5">
                             <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
-                            <h4>Your cart is empty</h4>
+                            <h4>No bookings yet</h4>
+                            <p>Book products to see them here.</p>
                             <a href="{% url 'all_products' %}" class="btn btn-success mt-3">Start Shopping</a>
                         </div>
                     {% endif %}
@@ -51,30 +55,47 @@
         <div class="col-md-4">
             <div class="card shadow">
                 <div class="card-header bg-success text-white">
-                    <h4>Order Summary</h4>
+                    <h4>Booking Summary</h4>
                 </div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
-                        <span>Subtotal:</span>
-                        <span>₹{{ total|floatformat:2 }}</span>
+                        <span>Total Items:</span>
+                        <span>{{ cart_items|length }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
-                        <span>Delivery:</span>
-                        <span>Free</span>
+                        <span>Total Amount:</span>
+                        <span>₹{{ total|floatformat:2 }}</span>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between mb-3">
-                        <strong>Total:</strong>
+                        <strong>Total Payable:</strong>
                         <strong class="text-success">₹{{ total|floatformat:2 }}</strong>
                     </div>
                     {% if cart_items %}
-                        <button class="btn btn-success w-100" onclick="alert('Order placed successfully! The seller will contact you soon.')">
-                            Proceed to Checkout
-                        </button>
+                        <div class="alert alert-info">
+                            <small><i class="fas fa-info-circle"></i> Your booked items are reserved. Contact the seller for payment and delivery.</small>
+                        </div>
+                        <a href="{% url 'all_products' %}" class="btn btn-success w-100">Continue Shopping</a>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .cart-item {
+        transition: background 0.3s;
+    }
+    .cart-item:hover {
+        background-color: #f8f9fa;
+    }
+    .btn-danger {
+        background-color: #dc3545;
+        border: none;
+    }
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+</style>
 {% endblock %}

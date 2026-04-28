@@ -1,0 +1,94 @@
+{% extends 'app/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white text-center">
+                    <h3><i class="fas fa-sign-in-alt"></i> Welcome Back!</h3>
+                    <p>Login to your FreshOKart account</p>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <input type="text" name="username" id="username" class="form-control" placeholder="Enter your username" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" name="password" id="password" class="form-control" placeholder="Enter your password" required>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <p>Don't have an account? <a href="{% url 'signup' %}" class="text-success">Sign up here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+        border: none;
+    }
+    .card-header {
+        background: linear-gradient(135deg, #2e7d32, #1b5e20);
+        border-bottom: none;
+    }
+    .btn-success {
+        background-color: #2e7d32;
+        border: none;
+        padding: 12px;
+        border-radius: 25px;
+        font-weight: bold;
+        transition: all 0.3s;
+    }
+    .btn-success:hover {
+        background-color: #1b5e20;
+        transform: translateY(-2px);
+    }
+    .input-group-text {
+        background-color: #f8f9fa;
+    }
+    .form-control:focus {
+        border-color: #2e7d32;
+        box-shadow: 0 0 0 0.2rem rgba(46, 125, 50, 0.25);
+    }
+    a.text-success {
+        color: #2e7d32 !important;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    a.text-success:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}

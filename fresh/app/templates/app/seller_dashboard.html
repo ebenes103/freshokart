@@ -4,19 +4,23 @@
 {% block content %}
 <div class="container py-4">
     <div class="row">
+        <!-- Add Product Form -->
         <div class="col-md-4">
             <div class="card shadow mb-4">
                 <div class="card-header bg-success text-white">
-                    <h4>Add New Product</h4>
+                    <h4><i class="fas fa-plus-circle"></i> Add New Product</h4>
                 </div>
                 <div class="card-body">
                     <form method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
-                        {{ product_form|crispy }}
+                        
+                        <!-- Product Name -->
                         <div class="mb-3">
-                            <label class="form-label">Product Images (Multiple)</label>
-                            <input type="file" name="images" multiple accept="image/*" class="form-control" required>
+                            <label class="form-label">Product Name</label>
+                            <input type="text" name="name" class="form-control" required>
                         </div>
+                        
+                        <!-- Category -->
                         <div class="mb-3">
                             <label class="form-label">Category</label>
                             <select name="category" class="form-control" required>
@@ -26,60 +30,208 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-success w-100">Add Product</button>
+                        
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="3" required></textarea>
+                        </div>
+                        
+                        <!-- Price and Unit -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Price (₹)</label>
+                                    <input type="number" name="price" class="form-control" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Unit</label>
+                                    <select name="unit" class="form-control" required>
+                                        <option value="kg">Kilogram (kg)</option>
+                                        <option value="dozen">Dozen</option>
+                                        <option value="piece">Piece</option>
+                                        <option value="packet">Packet</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quantity Available -->
+                        <div class="mb-3">
+                            <label class="form-label">Quantity Available (Stock)</label>
+                            <input type="number" name="quantity_available" class="form-control" value="1" min="1" required>
+                            <small class="text-muted">How many units do you have?</small>
+                        </div>
+                        
+                        <!-- Location -->
+                        <div class="mb-3">
+                            <label class="form-label">District</label>
+                            <select name="district" class="form-control" required>
+                                <option value="">Select District</option>
+                                {% for district in districts %}
+                                    <option value="{{ district.id }}">{{ district.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">City / Town</label>
+                            <select name="city" class="form-control" required>
+                                <option value="">Select City</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Product Images -->
+                        <div class="mb-3">
+                            <label class="form-label">Product Images (Multiple)</label>
+                            <input type="file" name="images" multiple accept="image/*" class="form-control" required>
+                            <small class="text-muted">You can select multiple images</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-cloud-upload-alt"></i> Add Product
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
         
+        <!-- My Products List -->
         <div class="col-md-8">
             <div class="card shadow">
                 <div class="card-header bg-success text-white">
-                    <h4>My Products</h4>
+                    <h4><i class="fas fa-box"></i> My Products</h4>
                 </div>
                 <div class="card-body">
                     {% if products %}
-                        <div class="row">
-                            {% for product in products %}
-                                <div class="col-md-6 mb-3">
-                                    <div class="card">
-                                        <div class="row g-0">
-                                            <div class="col-md-4">
-                                                {% if product.images.first %}
-                                                    <img src="{{ product.images.first.image.url }}" class="img-fluid rounded-start" style="height: 100%; object-fit: cover;">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr style="background-color: #f8f9fa;">
+                                        <th>Product</th>
+                                        <th>Price</th>
+                                        <th>Stock</th>
+                                        <th>Booked</th>
+                                        <th>Available</th>
+                                        <th>Status</th>
+                                        <th>Listed</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in products %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ product.name }}</strong><br>
+                                                <small class="text-muted">{{ product.category.name }}</small>
+                                            </td>
+                                            <td>₹{{ product.price }}/{{ product.unit }}</td>
+                                            <td>{{ product.quantity_available }}</td>
+                                            <td>
+                                                {% if product.quantity_booked > 0 %}
+                                                    <span class="badge bg-info">{{ product.quantity_booked }} booked</span>
+                                                {% else %}
+                                                    0
                                                 {% endif %}
-                                            </div>
-                                            <div class="col-md-8">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">{{ product.name }}</h5>
-                                                    <p class="card-text">₹{{ product.price }}/{{ product.unit }}</p>
-                                                    <p class="card-text">
-                                                        <small class="text-muted">
-                                                            Location: {{ product.city }}, {{ product.district }}<br>
-                                                            Posted: {{ product.created_at|date:"M d, Y" }}<br>
-                                                            {% if product.is_fresh %}
-                                                                <span class="text-success">✓ Fresh</span>
-                                                            {% else %}
-                                                                <span class="text-danger">Expired</span>
-                                                            {% endif %}
-                                                        </small>
-                                                    </p>
-                                                    {% if product.booked_by %}
-                                                        <span class="badge bg-warning">Booked by {{ product.booked_by.user.username }}</span>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% if product.available_qty > 0 %}
+                                                    <span class="badge bg-success">{{ product.available_qty }} left</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Out of stock</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if product.is_fresh %}
+                                                    <span class="badge bg-success">Fresh</span>
+                                                {% elif product.is_moderately_fresh %}
+                                                    <span class="badge bg-warning text-dark">Use soon</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Expired</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <small>{{ product.created_at|timesince }} ago</small>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     {% else %}
-                        <p class="text-center">No products added yet. Add your first product!</p>
+                        <div class="text-center py-5">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <h5>No products added yet</h5>
+                            <p class="text-muted">Add your first product to start selling!</p>
+                        </div>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+    .badge {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+    }
+    .bg-warning {
+        background-color: #ff9800 !important;
+    }
+    .bg-info {
+        background-color: #2196f3 !important;
+        color: white;
+    }
+    .bg-secondary {
+        background-color: #9e9e9e !important;
+    }
+    .card-header {
+        border-bottom: none;
+    }
+    .table-responsive {
+        overflow-x: auto;
+    }
+</style>
+
+<script>
+    // Dynamic city loading based on selected district
+    document.addEventListener('DOMContentLoaded', function() {
+        const districtSelect = document.querySelector('select[name="district"]');
+        const citySelect = document.querySelector('select[name="city"]');
+        
+        if (districtSelect) {
+            districtSelect.addEventListener('change', function() {
+                const districtId = this.value;
+                
+                if (districtId) {
+                    citySelect.disabled = false;
+                    citySelect.innerHTML = '<option value="">Loading cities...</option>';
+                    
+                    fetch(`/api/cities/?district_id=${districtId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            citySelect.innerHTML = '<option value="">Select City</option>';
+                            data.cities.forEach(city => {
+                                citySelect.innerHTML += `<option value="${city.id}">${city.name}</option>`;
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error loading cities:', error);
+                            citySelect.innerHTML = '<option value="">Error loading cities</option>';
+                        });
+                } else {
+                    citySelect.disabled = true;
+                    citySelect.innerHTML = '<option value="">First select district</option>';
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

@@ -37,4 +37,58 @@
         {% endfor %}
     </div>
 </div>
+
+<div class="product-card">
+    {% if product.images.first %}
+        <img src="{{ product.images.first.image.url }}" class="product-img" alt="{{ product.name }}">
+    {% else %}
+        <img src="/static/images/default-product.jpg" class="product-img" alt="{{ product.name }}">
+    {% endif %}
+    
+    <!-- Badges -->
+    <div class="product-badges">
+        {% if product.get_freshness_badge == 'fresh' %}
+            <span class="badge freshness-fresh">
+                <i class="fas fa-leaf"></i> Fresh
+            </span>
+        {% elif product.get_freshness_badge == 'moderate' %}
+            <span class="badge freshness-moderate">
+                <i class="fas fa-clock"></i> Use Soon
+            </span>
+        {% else %}
+            <span class="badge freshness-old">
+                <i class="fas fa-hourglass-end"></i> Expired
+            </span>
+        {% endif %}
+        
+        {% if product.quantity_left <= 0 %}
+            <span class="badge badge-outstock">Out of Stock</span>
+        {% elif product.quantity_left <= 3 %}
+            <span class="badge badge-lowstock">Only {{ product.quantity_left }} left</span>
+        {% endif %}
+        
+        {% if product.quantity_booked > 0 %}
+            <span class="badge badge-booked">
+                <i class="fas fa-shopping-cart"></i> {{ product.quantity_booked }} booked
+            </span>
+        {% endif %}
+    </div>
+    
+    <div class="product-info">
+        <div class="product-name">{{ product.name }}</div>
+        <div class="product-price">₹{{ product.price }}/{{ product.unit }}</div>
+        <div class="product-location">
+            <i class="fas fa-map-marker-alt"></i> {{ product.city.name }}, {{ product.district.name }}
+        </div>
+        
+        {% if product.quantity_left > 0 and product.is_fresh %}
+            <a href="{% url 'product_detail' product.id %}" class="btn-buy d-block text-center text-decoration-none">View Details</a>
+        {% elif product.quantity_left > 0 and product.is_moderately_fresh %}
+            <a href="{% url 'product_detail' product.id %}" class="btn-buy btn-warning d-block text-center text-decoration-none">View Details (Limited Time)</a>
+        {% else %}
+            <button class="btn-buy disabled d-block text-center" disabled>Not Available</button>
+        {% endif %}
+    </div>
+</div>
+
 {% endblock %}
